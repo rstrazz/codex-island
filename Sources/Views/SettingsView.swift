@@ -16,6 +16,7 @@ struct SettingsView: View {
     @ObservedObject private var lowPower = LowPowerModeStore.shared
     @ObservedObject private var alwaysShow = AlwaysShowUsageStore.shared
     @ObservedObject private var paceDisplay = PaceDisplayStore.shared
+    @ObservedObject private var peek = PeekPreferenceStore.shared
     @ObservedObject private var alertPrefs = AlertThresholdStore.shared
     @ObservedObject private var spacing = IslandSpacingStore.shared
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
@@ -665,6 +666,33 @@ struct SettingsView: View {
             ) {
                 SettingsToggle(isOn: paceDisplay.enabled) {
                     paceDisplay.enabled.toggle()
+                }
+            }
+            SettingsRow(
+                title: "Pill shows",
+                subtitle: "Which limit the collapsed island shows and alerts on when a plan has both."
+            ) {
+                SegmentedControl(
+                    items: PeekPreferenceStore.Window.allCases,
+                    selected: $peek.window,
+                    label: \.label,
+                    accessibilityPrefix: "Pill shows"
+                )
+            }
+            SettingsRow(
+                title: "LIMIT at 100%",
+                subtitle: "Say LIMIT on the collapsed island when a limit is used up."
+            ) {
+                SettingsToggle(isOn: peek.showsLimit) {
+                    peek.showsLimit.toggle()
+                }
+            }
+            SettingsRow(
+                title: "Glow when over pace",
+                subtitle: "Turn the glow red while Claude is on track to run out before reset."
+            ) {
+                SettingsToggle(isOn: peek.glowsOverPace) {
+                    peek.glowsOverPace.toggle()
                 }
             }
         }

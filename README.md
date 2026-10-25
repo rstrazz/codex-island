@@ -44,7 +44,9 @@ for authentication details and data limitations.
   visible at rest with **Always show usage**.
 - **Pace.** Turn on **Show pace** to mark where even spending would put each
   limit right now and project where your current rate lands it by reset
-  (`→ 71% in 3d 19h`), or when it runs out first (`out in 45m`).
+  (`→ 71% in 3d 19h`), or when it runs out first (`out in 45m`). The
+  collapsed pill can show the weekly limit instead of the 5-hour one, say
+  `LIMIT` when a limit is used up, and glow red while Claude is over pace.
 - **Three swipeable screens.** Click to expand, then swipe between **Usage**,
   **Cost**, and **Overview**. Cost estimates today and month-to-date spend and
   token throughput from local Claude Code, Codex CLI, and OpenCode session
@@ -220,8 +222,10 @@ runs as an accessory app with no Dock icon and no menu bar.
 - **General:** Launch at Login, 5m/15m/30m refresh interval, app language,
   Always show usage, Low Power Mode, configurable limit alerts, and Sparkle
   update controls.
-- **Display:** used/remaining percentages, Show pace, Usage and Cost visualization styles,
-  target display, and island width on non-notched screens.
+- **Display:** used/remaining percentages, Show pace, which limit the
+  collapsed pill shows (5-hour or weekly), LIMIT at 100%, glow when over pace,
+  Usage and Cost visualization styles, target display, and island width on
+  non-notched screens.
 - **Providers:** Claude/Codex visibility and status, token-counting mode, and a
   manual refresh for local cost data. Cost estimates can be displayed in USD,
   CNY, EUR, GBP, JPY, KRW, CAD, AUD, CHF, or SEK. Conversion uses a cached daily

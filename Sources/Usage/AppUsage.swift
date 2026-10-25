@@ -128,8 +128,13 @@ struct AppUsage {
 
     var peekWindow: WindowUsage { window(peekWindowKind) }
 
-    var peekWindowKind: UsageWindow {
+    var peekWindowKind: UsageWindow { peekWindowKind(preferringWeekly: false) }
+
+    /// `preferringWeekly` is the "Pill shows: Week" setting. A plan with no
+    /// weekly reading keeps the usual pick.
+    func peekWindowKind(preferringWeekly: Bool) -> UsageWindow {
         let visible = visibleWindows
+        if preferringWeekly, visible.contains(.weekly), weekly.hasReading { return .weekly }
         if visible.count == 1 { return visible[0] }
         return visible.first { window($0).hasReading } ?? visible.first ?? .fiveHour
     }

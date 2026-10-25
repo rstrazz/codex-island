@@ -32,6 +32,7 @@ struct NotchPeekPill: View {
     var showsResetCaption = false
     var valueWidth: CGFloat? = nil
     var pace: WindowPace? = nil
+    var showsLimit = false
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -50,14 +51,16 @@ struct NotchPeekPill: View {
                         LoadingDot()
                     } else if showDash {
                         Text("-").font(Typography.bodyNumber).foregroundStyle(.white.opacity(0.40))
-                    } else if let paceText {
-                        Text(paceText).font(Typography.bodyNumber).foregroundStyle(paceTint)
+                    } else if let slotText {
+                        Text(slotText).font(Typography.bodyNumber).foregroundStyle(paceTint)
                     } else {
                         Text(resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback))
                             .font(Typography.bodyNumber)
                             .foregroundStyle(.white.opacity(resetText == nil ? 0.45 : 0.82))
                     }
-                    if usage.hasReading, paceText != nil || resetText != nil || !windowLengthFallback.isEmpty {
+                    if limitReached {
+                        Text(resetText ?? "").font(Typography.micro).foregroundStyle(.white.opacity(0.55))
+                    } else if usage.hasReading, paceText != nil || resetText != nil || !windowLengthFallback.isEmpty {
                         Text(L10n.tr(paceText != nil ? "Pace" : resetText == nil ? "Window" : "Reset"))
                             .font(Typography.micro).foregroundStyle(.white.opacity(0.55))
                     }
@@ -68,8 +71,8 @@ struct NotchPeekPill: View {
                 Text(contents == .reset ? "-" : "-%")
                     .font(Typography.bodyNumber)
                     .foregroundStyle(.white.opacity(0.40))
-            } else if contents == .reset, let paceText {
-                Text(paceText).font(Typography.bodyNumber).foregroundStyle(paceTint)
+            } else if contents == .reset, let slotText {
+                Text(slotText).font(Typography.bodyNumber).foregroundStyle(paceTint)
             } else if contents == .reset {
                 resetLabel
             } else if contents == .percentage {
@@ -116,8 +119,8 @@ struct NotchPeekPill: View {
                 }
             }
             .frame(height: 12)
-            if let paceText {
-                Text(paceText).font(Typography.caption).foregroundStyle(paceTint).frame(height: 11)
+            if let slotText {
+                Text(slotText).font(Typography.caption).foregroundStyle(paceTint).frame(height: 11)
             } else {
                 Text(usage.isUnlimitedAmount ? "∞" : usage.hasReading ? (resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback)) : "-")
                     .font(Typography.caption)
@@ -170,10 +173,15 @@ struct NotchPeekPill: View {
     /// Lower opacity on the fallback differentiates a passive "5-hour
     /// window" label from an active "5h until reset" countdown — same
     /// glyph shape, weaker visual presence.
+    @ViewBuilder
     private var resetLabel: some View {
-        Text(resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback))
-            .font(Typography.bodyNumber)
-            .foregroundStyle(.white.opacity(resetText == nil ? 0.45 : (contents == .reset ? 0.82 : 0.70)))
+        if limitReached {
+            Text(L10n.tr("LIMIT")).font(Typography.bodyNumber).foregroundStyle(IslandColor.alertRed)
+        } else {
+            Text(resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback))
+                .font(Typography.bodyNumber)
+                .foregroundStyle(.white.opacity(resetText == nil ? 0.45 : (contents == .reset ? 0.82 : 0.70)))
+        }
     }
 
     /// Brand tint by default; alert color when above threshold so the
@@ -218,7 +226,17 @@ struct NotchPeekPill: View {
         return "→\(Int((min(projected, 9.99) * 100).rounded()))%"
     }
 
+    /// The "LIMIT at 100%" setting, for a window that is used up.
+    private var limitReached: Bool {
+        showsLimit && usage.hasReading && !usage.isUnlimitedAmount && usage.usedPercent >= 1
+    }
+
+    private var slotText: String? {
+        limitReached ? L10n.tr("LIMIT") : paceText
+    }
+
     private var paceTint: Color {
+        if limitReached { return IslandColor.alertRed }
         switch pace?.level {
         case .over: return IslandColor.alertRed
         case .tight: return IslandColor.alertAmber

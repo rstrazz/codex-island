@@ -30,6 +30,9 @@ struct ClaudeFableUsageTests {
         expect(usage.weekly.usedPercent == 0.25, "Fable does not replace the overall weekly quota")
         expect(usage.fableWeekly.resetAt == ISO8601DateFormatter().date(from: "2027-01-15T08:30:00Z"), "Fable retains its own reset boundary")
         expect(usage.peekWindowKind == .fiveHour, "adding Fable preserves the primary peek metric")
+        expect(usage.peekWindowKind(preferringWeekly: true) == .weekly, "a weekly pill shows the all-models week, not Fable")
+        let fiveOnly = AppUsage(fiveHour: usage.fiveHour, weekly: .unknown)
+        expect(fiveOnly.peekWindowKind(preferringWeekly: true) == .fiveHour, "a weekly pill falls back when there is no weekly reading")
         expect(UsageWindow.fableWeekly.span == UsageWindow.weekly.span, "Fable has a weekly history lifetime")
 
         for (name, percent) in [("Fable", 0.0), ("Fable 5.1", 0.5), ("fable", 100.0)] {

@@ -419,3 +419,12 @@
 "Pace" = "节奏";
 "projected %d%% left by reset" = "预计重置时剩余 %d%%";
 "projected %d%% by reset" = "预计重置时 %d%%";
+"Pill shows" = "收起时显示";
+"Which limit the collapsed island shows and alerts on when a plan has both." = "套餐同时有两种额度时，收起的灵动岛显示并提醒哪一种。";
+"5-hour" = "5 小时";
+"Weekly" = "每周";
+"LIMIT at 100%" = "用尽时显示上限";
+"Say LIMIT on the collapsed island when a limit is used up." = "额度用尽时，在收起的灵动岛上显示“上限”。";
+"LIMIT" = "上限";
+"Glow when over pace" = "超速时发光";
+"Turn the glow red while Claude is on track to run out before reset." = "按当前速度 Claude 会在重置前用尽时，光晕变为红色。";

@@ -379,6 +379,8 @@ private struct GlowLayer: View {
     @ObservedObject private var lowPower = LowPowerModeStore.shared
     @ObservedObject private var alerts = AlertEngine.shared
     @ObservedObject private var occlusion = WindowOcclusionStore.shared
+    @ObservedObject private var visibility = ProviderVisibilityStore.shared
+    @ObservedObject private var peek = PeekPreferenceStore.shared
 
     var body: some View {
         ZStack {
@@ -429,12 +431,24 @@ private struct GlowLayer: View {
             || alerts.severity != .none
     }
 
+    /// The "Glow when over pace" setting: Claude's peek window is on track
+    /// to run out before it resets.
+    private var overPace: Bool {
+        guard peek.glowsOverPace, visibility.claudeVisible else { return false }
+        let kind = usageStore.claude.peekWindowKind(preferringWeekly: peek.prefersWeekly)
+        let window = usageStore.claude.window(kind)
+        guard kind != .monthly, window.error == nil,
+              let pace = WindowPace(usage: window, span: kind.span) else { return false }
+        return pace.showsProjection && pace.projectedFraction > 1
+    }
+
     /// Silhouette glow color. Cobalt is the ambient default; alert
     /// thresholds replace it with amber/red so the user gets the signal
     /// passively, even before hovering. All three share the same opacity
     /// so the glow's visual weight is constant — only the hue signals
     /// severity.
     private var glowColor: Color {
+        if overPace { return IslandColor.alertRed }
         switch alerts.severity {
         case .none:     return IslandColor.cobalt
         case .warning:  return IslandColor.alertAmber
@@ -466,6 +480,7 @@ private struct PeekPillOverlay: View {
     @ObservedObject private var usageStore = UsageStore.shared
     @ObservedObject private var alerts = AlertEngine.shared
     @ObservedObject private var paceDisplay = PaceDisplayStore.shared
+    @ObservedObject private var peek = PeekPreferenceStore.shared
 
     var body: some View {
         let window = currentWindow
@@ -481,7 +496,8 @@ private struct PeekPillOverlay: View {
             gaugeHeight: availableHeight ?? 38,
             showsResetCaption: showsResetCaption,
             valueWidth: slotWidth,
-            pace: pace(for: window)
+            pace: pace(for: window),
+            showsLimit: peek.showsLimit
         )
         Group {
             if contents == .reset || contents == .stacked {
@@ -524,8 +540,8 @@ private struct PeekPillOverlay: View {
 
     private var currentWindow: WindowUsage {
         switch provider {
-        case .claude: return usageStore.claude.peekWindow
-        case .codex:  return usageStore.codex.peekWindow
+        case .claude: return usageStore.claude.window(usageStore.claude.peekWindowKind(preferringWeekly: peek.prefersWeekly))
+        case .codex:  return usageStore.codex.window(usageStore.codex.peekWindowKind(preferringWeekly: peek.prefersWeekly))
         case .grok, .antigravity, .muse:
             return connections.primary(provider)?.window ?? .unknown
         }
@@ -541,8 +557,8 @@ private struct PeekPillOverlay: View {
 
     private var currentWindowKind: UsageWindow? {
         switch provider {
-        case .claude: return usageStore.claude.peekWindowKind
-        case .codex: return usageStore.codex.peekWindowKind
+        case .claude: return usageStore.claude.peekWindowKind(preferringWeekly: peek.prefersWeekly)
+        case .codex: return usageStore.codex.peekWindowKind(preferringWeekly: peek.prefersWeekly)
         case .muse:
             guard let kind = connections.primary(provider)?.kind else { return nil }
             return kind == .weekly ? .weekly : .fiveHour

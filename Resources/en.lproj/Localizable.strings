@@ -419,3 +419,12 @@
 "Pace" = "Pace";
 "projected %d%% left by reset" = "projected %d%% left by reset";
 "projected %d%% by reset" = "projected %d%% by reset";
+"Pill shows" = "Pill shows";
+"Which limit the collapsed island shows and alerts on when a plan has both." = "Which limit the collapsed island shows and alerts on when a plan has both.";
+"5-hour" = "5-hour";
+"Weekly" = "Weekly";
+"LIMIT at 100%" = "LIMIT at 100%";
+"Say LIMIT on the collapsed island when a limit is used up." = "Say LIMIT on the collapsed island when a limit is used up.";
+"LIMIT" = "LIMIT";
+"Glow when over pace" = "Glow when over pace";
+"Turn the glow red while Claude is on track to run out before reset." = "Turn the glow red while Claude is on track to run out before reset.";

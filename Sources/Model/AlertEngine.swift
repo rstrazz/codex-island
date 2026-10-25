@@ -87,6 +87,7 @@ final class AlertEngine: ObservableObject {
             ProviderQuotaPreferences.shared.objectWillChange.map { _ in () }.eraseToAnyPublisher(),
             AlertThresholdStore.shared.objectWillChange.map { _ in () }.eraseToAnyPublisher(),
             ProviderVisibilityStore.shared.objectWillChange.map { _ in () }.eraseToAnyPublisher(),
+            PeekPreferenceStore.shared.objectWillChange.map { _ in () }.eraseToAnyPublisher(),
         ]
 
         Publishers.MergeMany(triggers)
@@ -114,8 +115,11 @@ final class AlertEngine: ObservableObject {
             && AlertThresholdStore.warningRange.contains(warning)
             && AlertThresholdStore.criticalRange.contains(critical)
 
-        let claudeKinds: [UsageWindow] = usage.claude.visibleWindows.contains(.monthly) && usage.claude.peekWindowKind != .monthly
-            ? [usage.claude.peekWindowKind, .monthly] : [usage.claude.peekWindowKind]
+        let prefersWeekly = PeekPreferenceStore.shared.prefersWeekly
+        let claudePeek = usage.claude.peekWindowKind(preferringWeekly: prefersWeekly)
+        let codexPeek = usage.codex.peekWindowKind(preferringWeekly: prefersWeekly)
+        let claudeKinds: [UsageWindow] = usage.claude.visibleWindows.contains(.monthly) && claudePeek != .monthly
+            ? [claudePeek, .monthly] : [claudePeek]
         let inputs: [AlertDecision.WindowInput] = claudeKinds.map { kind in
             AlertDecision.WindowInput(provider: .claude, visible: visibility.claudeVisible,
                 window: usage.claude.window(kind), windowKind: kind)
@@ -125,9 +129,13 @@ final class AlertEngine: ObservableObject {
                 visible: visibility.codexVisible,
                 // peekWindow, not fiveHour: weekly-only Codex plans report no
                 // 5h window, and severity must track the same number the peek
-                // pill and silhouette tint surface. Two-window plans still
-                // alert on 5h (peekWindow prefers it).
-                window: usage.codex.peekWindow
+                // pill and silhouette tint surface. Two-window plans alert on
+                // 5h unless "Pill shows" is set to weekly. Only that setting
+                // keys the crossing by its real window, so flipping it can't
+                // re-fire an alert in the same reset cycle; leaving it off
+                // keeps existing crossing memory intact.
+                window: usage.codex.window(codexPeek),
+                windowKind: prefersWeekly ? codexPeek : .fiveHour
             ),
         ] + IslandProvider.allCases.filter { !$0.usesLegacyUsage }.map { provider in
             let limit = ProviderConnectionStore.shared.primary(provider)
