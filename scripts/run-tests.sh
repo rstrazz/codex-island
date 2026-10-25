@@ -74,6 +74,13 @@ swiftc \
 
 "$OUT_DIR/usage-merge-tests"
 
+swiftc -parse-as-library -o "$OUT_DIR/window-pace-tests" \
+  Sources/Model/UsageDisplayModeStore.swift \
+  Sources/Usage/AppUsage.swift \
+  Sources/Usage/WindowPace.swift \
+  Tests/WindowPaceTests.swift
+"$OUT_DIR/window-pace-tests"
+
 swiftc \
   -parse-as-library \
   -o "$OUT_DIR/wake-recovery-tests" \

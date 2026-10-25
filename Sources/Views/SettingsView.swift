@@ -15,6 +15,7 @@ struct SettingsView: View {
     @ObservedObject private var tokenMode = TokenCountModeStore.shared
     @ObservedObject private var lowPower = LowPowerModeStore.shared
     @ObservedObject private var alwaysShow = AlwaysShowUsageStore.shared
+    @ObservedObject private var paceDisplay = PaceDisplayStore.shared
     @ObservedObject private var alertPrefs = AlertThresholdStore.shared
     @ObservedObject private var spacing = IslandSpacingStore.shared
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
@@ -657,6 +658,14 @@ struct SettingsView: View {
                 subtitle: "Show usage as used or remaining quota."
             ) {
                 usageDisplaySegmented
+            }
+            SettingsRow(
+                title: "Show pace",
+                subtitle: "Mark even pace on each limit and project where it lands by reset."
+            ) {
+                SettingsToggle(isOn: paceDisplay.enabled) {
+                    paceDisplay.enabled.toggle()
+                }
             }
         }
         .padding(.horizontal, 14)

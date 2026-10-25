@@ -6,6 +6,8 @@ struct SteppedChart: View {
     let label: String
     let sub: String
     var rowLayout = false
+    var paceMark: Double? = nil
+    var projected: Double? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -33,14 +35,25 @@ struct SteppedChart: View {
         HStack(spacing: 3) {
             let segments = 20
             let filled = Double(DisplayNumber.percent(value)) / 100 * Double(segments)
+            let ghost = (projected ?? 0) / 100 * Double(segments)
             ForEach(0..<segments, id: \.self) { index in
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         Rectangle().fill(.white.opacity(0.12))
+                        Rectangle().fill(color.opacity(0.32))
+                            .frame(width: geometry.size.width * min(1, max(0, ghost - Double(index))))
                         Rectangle().fill(color)
                             .frame(width: geometry.size.width * min(1, max(0, filled - Double(index))))
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 1))
+                }
+            }
+        }
+        .overlay(alignment: .leading) {
+            if let paceMark {
+                GeometryReader { geometry in
+                    PaceMark(height: geometry.size.height + 6)
+                        .offset(x: min(geometry.size.width - 2, max(0, geometry.size.width * paceMark / 100 - 1)), y: -3)
                 }
             }
         }

@@ -42,6 +42,9 @@ for authentication details and data limitations.
 - **Hover to peek.** The silhouette widens just enough to show each visible
   provider's 5-hour percentage and reset headline, or keep those headlines
   visible at rest with **Always show usage**.
+- **Pace.** Turn on **Show pace** to mark where even spending would put each
+  limit right now and project where your current rate lands it by reset
+  (`→ 71% in 3d 19h`), or when it runs out first (`out in 45m`).
 - **Three swipeable screens.** Click to expand, then swipe between **Usage**,
   **Cost**, and **Overview**. Cost estimates today and month-to-date spend and
   token throughput from local Claude Code, Codex CLI, and OpenCode session
@@ -217,7 +220,7 @@ runs as an accessory app with no Dock icon and no menu bar.
 - **General:** Launch at Login, 5m/15m/30m refresh interval, app language,
   Always show usage, Low Power Mode, configurable limit alerts, and Sparkle
   update controls.
-- **Display:** used/remaining percentages, Usage and Cost visualization styles,
+- **Display:** used/remaining percentages, Show pace, Usage and Cost visualization styles,
   target display, and island width on non-notched screens.
 - **Providers:** Claude/Codex visibility and status, token-counting mode, and a
   manual refresh for local cost data. Cost estimates can be displayed in USD,

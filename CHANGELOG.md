@@ -6,6 +6,12 @@ tag was cut.
 
 ## [Unreleased]
 
+### Added
+
+- **Show pace** (Settings → Display): quota charts mark where even spending
+  would put each limit now and project where the current rate lands it by
+  reset, or when it runs out first. Off by default.
+
 ## [0.4.2] - 2026-10-18
 
 ### Fixed

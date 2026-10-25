@@ -412,3 +412,7 @@
 "Muse Code did not include usage limits in this response. Try again after using Muse Code." = "Muse Code did not include usage limits in this response. Try again after using Muse Code.";
 "Muse Code local token history is not supported yet" = "Muse Code local token history is not supported yet";
 "Last reading - refresh failed" = "Last reading - refresh failed";
+"Show pace" = "Show pace";
+"Mark even pace on each limit and project where it lands by reset." = "Mark even pace on each limit and project where it lands by reset.";
+"out in %@" = "out in %@";
+"→ %d%% in %@" = "→ %d%% in %@";

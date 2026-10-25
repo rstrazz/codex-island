@@ -15,7 +15,8 @@ struct ConnectedUsageBlock: View {
                     UsageChartsRow(color: provider.color, style: style.style, seed: provider == .grok ? 5 : 7,
                         metrics: limits.map { limit in
                             UsageChartMetric(id: limit.id, label: limit.label, window: limit.window,
-                                             historyKey: snapshot.historyKey(provider: provider, limit: limit))
+                                             historyKey: snapshot.historyKey(provider: provider, limit: limit),
+                                             span: limit.kind == .weekly && !snapshot.refreshFailed ? UsageWindow.weekly.span : nil)
                         })
                         .help(limits.first?.groupLabel ?? provider.name)
                     if snapshot.refreshFailed {

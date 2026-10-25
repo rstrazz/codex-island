@@ -85,7 +85,8 @@ struct ChartsBlock: View {
                             metrics: usage.visibleWindows.filter { $0 != .monthly }.map { kind in
                                 UsageChartMetric(id: kind.rawValue, label: kind.labelKey,
                                                  window: usage.window(kind),
-                                                 historyKey: "\(provider.rawValue).\(kind.rawValue)")
+                                                 historyKey: "\(provider.rawValue).\(kind.rawValue)",
+                                                 span: kind.span)
                             }, credits: usage.visibleWindows.contains(.monthly) ? usage.monthly : nil)
                     }
                 }
@@ -171,6 +172,7 @@ struct UsageChartMetric: Identifiable {
     let label: String
     let window: WindowUsage
     let historyKey: String
+    var span: TimeInterval? = nil
 }
 
 struct UsageChartsRow: View {
@@ -181,6 +183,7 @@ struct UsageChartsRow: View {
     var credits: WindowUsage? = nil
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
     @ObservedObject private var historyStore = UsageHistoryStore.shared
+    @ObservedObject private var paceDisplay = PaceDisplayStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var readings: [QuotaChartReading] {
@@ -192,11 +195,13 @@ struct UsageChartsRow: View {
                 Double(DisplayNumber.percent(WindowUsage(usedPercent: $0.used, resetAt: nil, error: nil)
                     .displayedFraction(mode: mode) * 100))
             } : []
+            let pace = paceDisplay.enabled && window.error == nil
+                ? metric.span.flatMap { WindowPace(usage: window, span: $0) } : nil
             return QuotaChartReading(id: metric.id, label: L10n.tr(metric.label), value: value,
-                caption: caption(window), amount: window.isUnlimitedAmount ? window.usedAmount.map { UsageCreditDisplay.currency($0, code: window.currencyCode) } : nil, history: value.map {
+                caption: caption(window, pace: pace), amount: window.isUnlimitedAmount ? window.usedAmount.map { UsageCreditDisplay.currency($0, code: window.currencyCode) } : nil, history: value.map {
                     SparklineSamples.displayed(history: history, value: $0, seed: seed + index,
                                                isDemo: AppEnvironment.isDemo)
-                } ?? [])
+                } ?? [], pace: pace)
         }
     }
 
@@ -242,7 +247,9 @@ struct UsageChartsRow: View {
                         Group {
                             if let value = reading.value {
                                 SteppedChart(value: value, color: color, label: reading.label,
-                                             sub: reading.caption, rowLayout: readings.count > 2)
+                                             sub: reading.caption, rowLayout: readings.count > 2,
+                                             paceMark: reading.paceMark(mode: usageDisplay.mode),
+                                             projected: reading.projectedFill(mode: usageDisplay.mode))
                             } else if let amount = reading.amount {
                                 UsageAmountChart(label: reading.label, amount: amount, sub: reading.caption)
                             } else {
@@ -256,6 +263,18 @@ struct UsageChartsRow: View {
                 }
             }
         }
+    }
+
+    func caption(_ window: WindowUsage, pace: WindowPace? = nil) -> String {
+        let base = caption(window)
+        guard let pace, pace.showsProjection,
+              let resetAt = window.resetAt else { return base }
+        if let out = pace.exhaustsAt {
+            return L10n.tr("out in %@", Duration.compact(max(0, out.timeIntervalSinceNow)))
+        }
+        let projected = usageDisplay.mode == .used ? pace.projectedFraction : max(0, 1 - pace.projectedFraction)
+        return L10n.tr("→ %d%% in %@", DisplayNumber.percent(projected * 100),
+                       Duration.compact(max(0, resetAt.timeIntervalSinceNow)))
     }
 
     func caption(_ window: WindowUsage) -> String {

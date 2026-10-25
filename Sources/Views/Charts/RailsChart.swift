@@ -21,7 +21,13 @@ struct RailsChart: View {
                         ZStack(alignment: .leading) {
                             Capsule().fill(.white.opacity(0.15))
                             if reading.value != nil {
+                                if let projected = reading.projectedFill(mode: mode) {
+                                    Capsule().fill(color.opacity(0.32)).frame(width: geometry.size.width * projected / 100)
+                                }
                                 Capsule().fill(color).frame(width: geometry.size.width * fraction)
+                                if let mark = reading.paceMark(mode: mode) {
+                                    PaceMark().offset(x: min(geometry.size.width - 2, max(0, geometry.size.width * mark / 100 - 1)))
+                                }
                             }
                         }
                     }

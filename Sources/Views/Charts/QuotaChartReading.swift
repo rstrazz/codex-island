@@ -8,6 +8,29 @@ struct QuotaChartReading: Identifiable {
     let caption: String
     var amount: String? = nil
     var history: [Double] = []
+    var pace: WindowPace? = nil
+
+    /// Even-pace position on the 0...100 scale the chart draws, in the
+    /// current used/remaining mode.
+    func paceMark(mode: UsageDisplayMode) -> Double? {
+        guard let pace else { return nil }
+        return (mode == .used ? pace.evenPaceFraction : 1 - pace.evenPaceFraction) * 100
+    }
+
+    /// Projected fill past the used portion. Remaining mode has no meaningful
+    /// ghost — the bar already shrinks toward it — so it shows only the mark.
+    func projectedFill(mode: UsageDisplayMode) -> Double? {
+        guard mode == .used, let pace, !pace.limitHit, pace.projectedFraction > pace.usedFraction else { return nil }
+        return min(1, pace.projectedFraction) * 100
+    }
+}
+
+struct PaceMark: View {
+    var height: CGFloat = 8
+
+    var body: some View {
+        Capsule().fill(.white.opacity(0.8)).frame(width: 2, height: height)
+    }
 }
 
 struct QuotaValue: View {

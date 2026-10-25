@@ -26,6 +26,21 @@ struct QuotaArc: Shape {
     }
 }
 
+struct ArcPaceMark: Shape {
+    var fraction: Double
+    var radiusRatio: CGFloat = 1
+
+    func path(in rect: CGRect) -> Path {
+        let radius = max(0, min(rect.width, rect.height) / 2 - 3) * radiusRatio
+        let angle = (135 + 270 * min(1, max(0, fraction))) * Double.pi / 180
+        let direction = CGVector(dx: CGFloat(cos(angle)), dy: CGFloat(sin(angle)))
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX + direction.dx * (radius - 5), y: rect.midY + direction.dy * (radius - 5)))
+        path.addLine(to: CGPoint(x: rect.midX + direction.dx * (radius + 5), y: rect.midY + direction.dy * (radius + 5)))
+        return path
+    }
+}
+
 struct OrbitChart: View {
     let readings: [QuotaChartReading]
     let color: Color
@@ -50,6 +65,14 @@ struct OrbitChart: View {
                     if reading.amount == nil {
                         QuotaArc(radiusRatio: ratio)
                             .stroke(.white.opacity(0.15), style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                        if let projected = reading.projectedFill(mode: mode) {
+                            QuotaArc(fraction: projected / 100, radiusRatio: ratio)
+                                .stroke(tint(reading).opacity(0.32), style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                        }
+                        if let mark = reading.paceMark(mode: mode) {
+                            ArcPaceMark(fraction: mark / 100, radiusRatio: ratio)
+                                .stroke(.white.opacity(0.8), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                        }
                         if let value = reading.value {
                             QuotaArc(fraction: value / 100, radiusRatio: ratio)
                                 .stroke(tint(reading), style: StrokeStyle(lineWidth: 6, lineCap: .round))

@@ -108,6 +108,7 @@ enum ChartQAScenario: String, CaseIterable {
     case creditsFirstFailure, creditsLongError, creditsLocalized, creditsWrappedAmount
     case creditsGrok, creditsAntigravity
     case fable, fableRemaining, fableCredits, fableError
+    case pace, paceRemaining, paceLimit
 
     @MainActor
     func apply() {
@@ -128,19 +129,22 @@ enum ChartQAScenario: String, CaseIterable {
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         if self == .creditsGrok { ProviderConnectionStore.shared.refresh(.grok) }
         if self == .creditsAntigravity { ProviderConnectionStore.shared.refresh(.antigravity) }
-        UsageDisplayModeStore.shared.mode = self == .remaining || self == .creditsRemaining || self == .fableRemaining ? .remaining : .used
+        UsageDisplayModeStore.shared.mode = self == .remaining || self == .creditsRemaining || self == .fableRemaining
+            || self == .paceRemaining ? .remaining : .used
+        PaceDisplayStore.shared.enabled = rawValue.hasPrefix("pace")
         let now = Date()
         func reading(_ value: Double, _ reset: TimeInterval) -> WindowUsage {
             WindowUsage(usedPercent: value / 100, resetAt: now.addingTimeInterval(reset), error: nil)
         }
         let short: WindowUsage = self == .unknown
             ? WindowUsage(usedPercent: 0, resetAt: nil, error: "Unable to fetch usage. Check connection.")
-            : reading(self == .zero ? 0 : 19, 7200)
+            : reading(self == .zero ? 0 : self == .paceLimit ? 80 : 19, 7200)
         let codexWeek = reading(self == .zero ? 100 : 32, 3 * 86400 + 20 * 3600)
         let claudeShort = reading(self == .zero ? 0 : 14, 4 * 3600)
-        let claudeWeek = reading(self == .zero ? 0 : 28, 5 * 86400 + 11 * 3600)
+        let claudeWeek = reading(self == .zero ? 0 : self == .paceLimit ? 100 : 28, 5 * 86400 + 11 * 3600)
         let codexWindows: [UsageWindow] = self == .fiveHourOnly ? [.fiveHour]
-            : [.codex, .both, .unknown, .remaining, .zero].contains(self) ? [.fiveHour, .weekly] : [.weekly]
+            : [.codex, .both, .unknown, .remaining, .zero].contains(self) || rawValue.hasPrefix("pace")
+                ? [.fiveHour, .weekly] : [.weekly]
         let claudeWindows: [UsageWindow] = self == .fiveHourOnly ? [.fiveHour]
             : [.weekly, .codex].contains(self) ? [.weekly] : [.fiveHour, .weekly]
         UsageStore.shared.codex = AppUsage(fiveHour: codexWindows.contains(.fiveHour) ? short : .unknown,
