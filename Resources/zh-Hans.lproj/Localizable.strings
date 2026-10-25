@@ -416,3 +416,6 @@
 "Mark even pace on each limit and project where it lands by reset." = "在每个额度上标出匀速用量，并预测重置时的用量。";
 "out in %@" = "%@ 后用尽";
 "→ %d%% in %@" = "%2$@ 后 → %1$d%%";
+"Pace" = "节奏";
+"projected %d%% left by reset" = "预计重置时剩余 %d%%";
+"projected %d%% by reset" = "预计重置时 %d%%";

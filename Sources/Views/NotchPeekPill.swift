@@ -31,6 +31,7 @@ struct NotchPeekPill: View {
     var gaugeHeight: CGFloat = 38
     var showsResetCaption = false
     var valueWidth: CGFloat? = nil
+    var pace: WindowPace? = nil
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -49,13 +50,15 @@ struct NotchPeekPill: View {
                         LoadingDot()
                     } else if showDash {
                         Text("-").font(Typography.bodyNumber).foregroundStyle(.white.opacity(0.40))
+                    } else if let paceText {
+                        Text(paceText).font(Typography.bodyNumber).foregroundStyle(paceTint)
                     } else {
                         Text(resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback))
                             .font(Typography.bodyNumber)
                             .foregroundStyle(.white.opacity(resetText == nil ? 0.45 : 0.82))
                     }
-                    if usage.hasReading, resetText != nil || !windowLengthFallback.isEmpty {
-                        Text(L10n.tr(resetText == nil ? "Window" : "Reset"))
+                    if usage.hasReading, paceText != nil || resetText != nil || !windowLengthFallback.isEmpty {
+                        Text(L10n.tr(paceText != nil ? "Pace" : resetText == nil ? "Window" : "Reset"))
                             .font(Typography.micro).foregroundStyle(.white.opacity(0.55))
                     }
                 }
@@ -65,6 +68,8 @@ struct NotchPeekPill: View {
                 Text(contents == .reset ? "-" : "-%")
                     .font(Typography.bodyNumber)
                     .foregroundStyle(.white.opacity(0.40))
+            } else if contents == .reset, let paceText {
+                Text(paceText).font(Typography.bodyNumber).foregroundStyle(paceTint)
             } else if contents == .reset {
                 resetLabel
             } else if contents == .percentage {
@@ -111,10 +116,14 @@ struct NotchPeekPill: View {
                 }
             }
             .frame(height: 12)
-            Text(usage.isUnlimitedAmount ? "∞" : usage.hasReading ? (resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback)) : "-")
-                .font(Typography.caption)
-                .foregroundStyle(.white.opacity(!usage.hasReading ? 0.40 : (resetText == nil ? 0.45 : 0.70)))
-                .frame(height: 11)
+            if let paceText {
+                Text(paceText).font(Typography.caption).foregroundStyle(paceTint).frame(height: 11)
+            } else {
+                Text(usage.isUnlimitedAmount ? "∞" : usage.hasReading ? (resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback)) : "-")
+                    .font(Typography.caption)
+                    .foregroundStyle(.white.opacity(!usage.hasReading ? 0.40 : (resetText == nil ? 0.45 : 0.70)))
+                    .frame(height: 11)
+            }
         }
     }
 
@@ -199,6 +208,22 @@ struct NotchPeekPill: View {
                 : UsageCreditDisplay.currency(amount, code: usage.currencyCode)
         }
         return "\(usage.displayedPercentInt(mode: usageDisplay.mode))%"
+    }
+
+    /// Where the current rate lands the window by reset, in the used/remaining
+    /// mode. Early in a window and at a hit limit the countdown says more.
+    private var paceText: String? {
+        guard let pace, usage.hasReading, pace.showsProjection else { return nil }
+        let projected = usageDisplay.mode == .used ? pace.projectedFraction : max(0, 1 - pace.projectedFraction)
+        return "→\(Int((min(projected, 9.99) * 100).rounded()))%"
+    }
+
+    private var paceTint: Color {
+        switch pace?.level {
+        case .over: return IslandColor.alertRed
+        case .tight: return IslandColor.alertAmber
+        default: return .white.opacity(0.82)
+        }
     }
 
     /// Shared compact countdown (`Nm` / `Nh` / `Nd Nh`). Returns nil if

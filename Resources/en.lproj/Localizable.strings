@@ -416,3 +416,6 @@
 "Mark even pace on each limit and project where it lands by reset." = "Mark even pace on each limit and project where it lands by reset.";
 "out in %@" = "out in %@";
 "→ %d%% in %@" = "→ %d%% in %@";
+"Pace" = "Pace";
+"projected %d%% left by reset" = "projected %d%% left by reset";
+"projected %d%% by reset" = "projected %d%% by reset";

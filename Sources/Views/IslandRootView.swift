@@ -465,6 +465,7 @@ private struct PeekPillOverlay: View {
     @ObservedObject private var quotaPreferences = ProviderQuotaPreferences.shared
     @ObservedObject private var usageStore = UsageStore.shared
     @ObservedObject private var alerts = AlertEngine.shared
+    @ObservedObject private var paceDisplay = PaceDisplayStore.shared
 
     var body: some View {
         let window = currentWindow
@@ -479,7 +480,8 @@ private struct PeekPillOverlay: View {
             gaugeProgress: gaugeProgress,
             gaugeHeight: availableHeight ?? 38,
             showsResetCaption: showsResetCaption,
-            valueWidth: slotWidth
+            valueWidth: slotWidth,
+            pace: pace(for: window)
         )
         Group {
             if contents == .reset || contents == .stacked {
@@ -505,8 +507,9 @@ private struct PeekPillOverlay: View {
         .offset(x: pillsVisible ? 0 : (isLeft ? -6 : 6))
         .allowsHitTesting(false)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(peekLabel(for: window, provider: providerLabel,
-                                      weekly: currentWindowIsWeekly, monthly: currentWindowIsMonthly))
+        .accessibilityLabel([peekLabel(for: window, provider: providerLabel,
+                                       weekly: currentWindowIsWeekly, monthly: currentWindowIsMonthly),
+                             paceLabel(for: window)].compactMap { $0 }.joined(separator: ", "))
         // Mirror the visual opacity gate exactly — both `pillsVisible` and
         // `isVisible` must be true for the pill to render. Keying the
         // accessibility hide on only `isVisible` lets VoiceOver reach a
@@ -545,6 +548,28 @@ private struct PeekPillOverlay: View {
             return kind == .weekly ? .weekly : .fiveHour
         case .grok, .antigravity: return nil
         }
+    }
+
+    private var currentWindowSpan: TimeInterval? {
+        switch provider {
+        case .claude, .codex:
+            return currentWindowKind.flatMap { $0 == .monthly ? nil : $0.span }
+        case .grok, .antigravity, .muse:
+            return connections.primary(provider)?.kind == .weekly ? UsageWindow.weekly.span : nil
+        }
+    }
+
+    private func pace(for window: WindowUsage) -> WindowPace? {
+        guard paceDisplay.enabled, window.error == nil, let span = currentWindowSpan else { return nil }
+        return WindowPace(usage: window, span: span)
+    }
+
+    private func paceLabel(for window: WindowUsage) -> String? {
+        guard let pace = pace(for: window), pace.showsProjection else { return nil }
+        if UsageDisplayModeStore.shared.mode == .remaining {
+            return L10n.tr("projected %d%% left by reset", Int((max(0, 1 - pace.projectedFraction) * 100).rounded()))
+        }
+        return L10n.tr("projected %d%% by reset", Int((min(pace.projectedFraction, 9.99) * 100).rounded()))
     }
 
     private var windowLengthFallback: String {
