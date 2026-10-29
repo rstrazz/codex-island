@@ -66,6 +66,14 @@ struct WindowPaceTests {
         expect(morning?.showsProjection == true && morning?.lowConfidence == true,
                "5% seven hours into the week shows a projection, marked low confidence")
         expect(close(morning?.projectedFraction, 1.00), "5% seven hours into the week projects 100% (extrapolated from the 5% floor)")
+
+        // MARK: the displayed figure (panel caption and peek pill share it)
+
+        let early = pace(0.06, elapsed: 8 * 3600)
+        expect(early?.projectedPercent(mode: .used) == 120, "6% early in the week reads 120%, not clamped to 100%")
+        expect(early?.projectedPercent(mode: .remaining) == 0, "remaining never reads below 0%")
+        expect(pace(0.5, elapsed: week * 0.05)?.projectedPercent(mode: .used) == 999, "a runaway rate caps at 999%")
+        expect(half?.projectedPercent(mode: .remaining) == 40, "60% projected leaves 40% in remaining mode")
         let idle = pace(0, elapsed: 3 * 3600, span: UsageWindow.fiveHour.span)
         expect(idle?.showsProjection == false, "0% used shows no projection")
         expect(close(idle?.evenPaceFraction, 0.60), "0% used still has an even-pace mark")

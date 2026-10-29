@@ -222,8 +222,7 @@ struct NotchPeekPill: View {
     /// mode, marked "~" early in a window. At a hit limit the countdown says more.
     private var paceText: String? {
         guard let pace, usage.hasReading, pace.showsProjection else { return nil }
-        let projected = usageDisplay.mode == .used ? pace.projectedFraction : max(0, 1 - pace.projectedFraction)
-        return "→\(pace.lowConfidence ? "~" : "")\(Int((min(projected, 9.99) * 100).rounded()))%"
+        return "→\(pace.lowConfidence ? "~" : "")\(pace.projectedPercent(mode: usageDisplay.mode))%"
     }
 
     /// The "LIMIT at 100%" setting, for a window that is used up.

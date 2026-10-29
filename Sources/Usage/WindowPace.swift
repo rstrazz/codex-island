@@ -19,6 +19,14 @@ struct WindowPace: Equatable {
     /// fast start is exactly what's worth seeing.
     var showsProjection: Bool { usedFraction > 0 && !limitHit }
 
+    /// The projection as a whole percent for the used/remaining mode, capped at
+    /// 999 so a runaway early rate can't print four digits. Not clamped to 100:
+    /// over 100 is the whole point of the warning.
+    func projectedPercent(mode: UsageDisplayMode) -> Int {
+        let fraction = mode == .used ? projectedFraction : max(0, 1 - projectedFraction)
+        return Int((min(fraction, 9.99) * 100).rounded())
+    }
+
     var level: Level {
         if limitHit || projectedFraction > 1 { return .over }
         return projectedFraction > 0.85 ? .tight : .onPace

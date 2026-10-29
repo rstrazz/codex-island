@@ -582,12 +582,12 @@ private struct PeekPillOverlay: View {
 
     private func paceLabel(for window: WindowUsage) -> String? {
         guard let pace = pace(for: window), pace.showsProjection else { return nil }
-        if UsageDisplayModeStore.shared.mode == .remaining {
-            return L10n.tr(pace.lowConfidence ? "projected ~%d%% left by reset" : "projected %d%% left by reset",
-                           Int((max(0, 1 - pace.projectedFraction) * 100).rounded()))
+        let mode = UsageDisplayModeStore.shared.mode
+        let percent = pace.projectedPercent(mode: mode)
+        if mode == .remaining {
+            return L10n.tr(pace.lowConfidence ? "projected ~%d%% left by reset" : "projected %d%% left by reset", percent)
         }
-        return L10n.tr(pace.lowConfidence ? "projected ~%d%% by reset" : "projected %d%% by reset",
-                       Int((min(pace.projectedFraction, 9.99) * 100).rounded()))
+        return L10n.tr(pace.lowConfidence ? "projected ~%d%% by reset" : "projected %d%% by reset", percent)
     }
 
     private var windowLengthFallback: String {

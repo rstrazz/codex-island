@@ -273,8 +273,7 @@ struct UsageChartsRow: View {
         if let out = pace.exhaustsAt, !pace.lowConfidence {
             return L10n.tr("out in %@", Duration.compact(max(0, out.timeIntervalSinceNow)))
         }
-        let projected = usageDisplay.mode == .used ? pace.projectedFraction : max(0, 1 - pace.projectedFraction)
-        return L10n.tr(pace.lowConfidence ? "→ ~%d%% in %@" : "→ %d%% in %@", DisplayNumber.percent(projected * 100),
+        return L10n.tr(pace.lowConfidence ? "→ ~%d%% in %@" : "→ %d%% in %@", pace.projectedPercent(mode: usageDisplay.mode),
                        Duration.compact(max(0, resetAt.timeIntervalSinceNow)))
     }
 
