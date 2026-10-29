@@ -416,9 +416,12 @@
 "Mark even pace on each limit and project where it lands by reset." = "Mark even pace on each limit and project where it lands by reset.";
 "out in %@" = "out in %@";
 "→ %d%% in %@" = "→ %d%% in %@";
+"→ ~%d%% in %@" = "→ ~%d%% in %@";
 "Pace" = "Pace";
 "projected %d%% left by reset" = "projected %d%% left by reset";
 "projected %d%% by reset" = "projected %d%% by reset";
+"projected ~%d%% left by reset" = "projected ~%d%% left by reset";
+"projected ~%d%% by reset" = "projected ~%d%% by reset";
 "Pill shows" = "Pill shows";
 "Which limit the collapsed island shows and alerts on when a plan has both." = "Which limit the collapsed island shows and alerts on when a plan has both.";
 "5-hour" = "5-hour";

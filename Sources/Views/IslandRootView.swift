@@ -439,7 +439,7 @@ private struct GlowLayer: View {
         let window = usageStore.claude.window(kind)
         guard kind != .monthly, window.error == nil,
               let pace = WindowPace(usage: window, span: kind.span) else { return false }
-        return pace.showsProjection && pace.projectedFraction > 1
+        return pace.showsProjection && !pace.lowConfidence && pace.projectedFraction > 1
     }
 
     /// Silhouette glow color. Cobalt is the ambient default; alert
@@ -583,9 +583,11 @@ private struct PeekPillOverlay: View {
     private func paceLabel(for window: WindowUsage) -> String? {
         guard let pace = pace(for: window), pace.showsProjection else { return nil }
         if UsageDisplayModeStore.shared.mode == .remaining {
-            return L10n.tr("projected %d%% left by reset", Int((max(0, 1 - pace.projectedFraction) * 100).rounded()))
+            return L10n.tr(pace.lowConfidence ? "projected ~%d%% left by reset" : "projected %d%% left by reset",
+                           Int((max(0, 1 - pace.projectedFraction) * 100).rounded()))
         }
-        return L10n.tr("projected %d%% by reset", Int((min(pace.projectedFraction, 9.99) * 100).rounded()))
+        return L10n.tr(pace.lowConfidence ? "projected ~%d%% by reset" : "projected %d%% by reset",
+                       Int((min(pace.projectedFraction, 9.99) * 100).rounded()))
     }
 
     private var windowLengthFallback: String {

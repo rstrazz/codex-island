@@ -14,8 +14,10 @@ struct WindowPace: Equatable {
 
     var limitHit: Bool { usedFraction >= 1 }
 
-    /// Nothing used yet, too early to tell, or already out: no figure worth showing.
-    var showsProjection: Bool { usedFraction > 0 && !lowConfidence && !limitHit }
+    /// Nothing used yet or already out: no figure worth showing. Early in a
+    /// window the figure still shows, marked rough (`lowConfidence`), since a
+    /// fast start is exactly what's worth seeing.
+    var showsProjection: Bool { usedFraction > 0 && !limitHit }
 
     var level: Level {
         if limitHit || projectedFraction > 1 { return .over }

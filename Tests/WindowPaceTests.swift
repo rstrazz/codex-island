@@ -61,7 +61,11 @@ struct WindowPaceTests {
         // MARK: projection text needs something to extrapolate
 
         expect(half?.showsProjection == true, "30% halfway shows a projection")
-        expect(sliver?.showsProjection == false, "the first sliver of a window shows no projection")
+        expect(sliver?.showsProjection == true, "the first sliver of a window still shows a (rough) projection")
+        let morning = pace(0.05, elapsed: 7 * 3600)
+        expect(morning?.showsProjection == true && morning?.lowConfidence == true,
+               "5% seven hours into the week shows a projection, marked low confidence")
+        expect(close(morning?.projectedFraction, 1.00), "5% seven hours into the week projects 100% (extrapolated from the 5% floor)")
         let idle = pace(0, elapsed: 3 * 3600, span: UsageWindow.fiveHour.span)
         expect(idle?.showsProjection == false, "0% used shows no projection")
         expect(close(idle?.evenPaceFraction, 0.60), "0% used still has an even-pace mark")
