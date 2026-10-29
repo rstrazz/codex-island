@@ -108,7 +108,7 @@ enum ChartQAScenario: String, CaseIterable {
     case creditsFirstFailure, creditsLongError, creditsLocalized, creditsWrappedAmount
     case creditsGrok, creditsAntigravity
     case fable, fableRemaining, fableCredits, fableError
-    case pace, paceRemaining, paceLimit
+    case pace, paceRemaining, paceLimit, paceEarly
 
     @MainActor
     func apply() {
@@ -141,7 +141,9 @@ enum ChartQAScenario: String, CaseIterable {
             : reading(self == .zero ? 0 : self == .paceLimit ? 80 : 19, 7200)
         let codexWeek = reading(self == .zero ? 100 : 32, 3 * 86400 + 20 * 3600)
         let claudeShort = reading(self == .zero ? 0 : 14, 4 * 3600)
-        let claudeWeek = reading(self == .zero ? 0 : self == .paceLimit ? 100 : 28, 5 * 86400 + 11 * 3600)
+        // paceEarly: 5% seven hours into the week, so the projection shows marked rough.
+        let claudeWeek = self == .paceEarly ? reading(5, 6 * 86400 + 17 * 3600)
+            : reading(self == .zero ? 0 : self == .paceLimit ? 100 : 28, 5 * 86400 + 11 * 3600)
         let codexWindows: [UsageWindow] = self == .fiveHourOnly ? [.fiveHour]
             : [.codex, .both, .unknown, .remaining, .zero].contains(self) || rawValue.hasPrefix("pace")
                 ? [.fiveHour, .weekly] : [.weekly]
