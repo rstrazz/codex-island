@@ -10,7 +10,8 @@ tag was cut.
 
 - **Show pace** (Settings → Display): quota charts mark where even spending
   would put each limit now and project where the current rate lands it by
-  reset, or when it runs out first. Off by default.
+  reset, or when it runs out first. Early in a window the projection is
+  marked rough (`~120%`) rather than hidden. Off by default.
 - **Pill shows**, **LIMIT at 100%** and **Glow when over pace** (Settings →
   Display): show the weekly limit on the collapsed island instead of the
   5-hour one, say LIMIT when a limit is used up, and turn the glow red while
