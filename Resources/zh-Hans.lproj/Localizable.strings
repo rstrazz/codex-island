@@ -431,3 +431,8 @@
 "LIMIT" = "上限";
 "Glow when over pace" = "超速时发光";
 "Turn the glow red while Claude is on track to run out before reset." = "按当前速度 Claude 会在重置前用尽时，光晕变为红色。";
+"Flag a fast last hour" = "标记过去一小时的高速消耗";
+"Show a flame and how many times even pace the last hour ran, while it's 3× or more." = "过去一小时的消耗达到匀速的 3 倍或以上时，显示火焰图标和倍数。";
+"%d×" = "%d×";
+"%d× · out in %@" = "%d× · %@ 后用尽";
+"last hour %d times even pace" = "过去一小时为匀速的 %d 倍";

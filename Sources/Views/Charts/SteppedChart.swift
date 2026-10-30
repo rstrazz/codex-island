@@ -8,6 +8,7 @@ struct SteppedChart: View {
     var rowLayout = false
     var paceMark: Double? = nil
     var projected: Double? = nil
+    var burst: String? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -16,7 +17,7 @@ struct SteppedChart: View {
                 HStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 3) {
                         ChartHead(value: value, label: label, valueSize: 24)
-                        ChartFoot(caption: sub)
+                        foot
                     }
                     .frame(width: 132, alignment: .leading)
                     segments.frame(height: 20)
@@ -25,9 +26,18 @@ struct SteppedChart: View {
                 VStack(alignment: .leading, spacing: 10) {
                     ChartHead(value: value, label: label)
                     segments.frame(height: 16)
-                    ChartFoot(caption: sub)
+                    foot
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var foot: some View {
+        if let burst {
+            QuotaCaption(caption: sub, burst: burst).frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            ChartFoot(caption: sub)
         }
     }
 

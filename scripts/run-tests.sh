@@ -81,6 +81,13 @@ swiftc -parse-as-library -o "$OUT_DIR/window-pace-tests" \
   Tests/WindowPaceTests.swift
 "$OUT_DIR/window-pace-tests"
 
+swiftc -parse-as-library -o "$OUT_DIR/recent-burn-tests" \
+  Sources/Model/UsageDisplayModeStore.swift \
+  Sources/Usage/AppUsage.swift \
+  Sources/Usage/RecentBurn.swift \
+  Tests/RecentBurnTests.swift
+"$OUT_DIR/recent-burn-tests"
+
 swiftc \
   -parse-as-library \
   -o "$OUT_DIR/wake-recovery-tests" \

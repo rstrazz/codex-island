@@ -1,7 +1,7 @@
 import Foundation
 
-/// How the collapsed island reads: which window the peek pill shows, and two
-/// louder signals for a window that is used up or burning fast.
+/// How the collapsed island reads: which window the peek pill shows, and
+/// louder signals for a window that is used up, burning fast, or spiking.
 ///
 /// Defaults keep the pill as it was: session first, no extra signals.
 @MainActor
@@ -22,6 +22,7 @@ final class PeekPreferenceStore: ObservableObject {
     private static let windowKey = "MacIsland.peekWindow"
     private static let limitKey = "MacIsland.peekShowsLimit"
     private static let glowKey = "MacIsland.glowOverPace"
+    private static let burstKey = "MacIsland.flagBurst"
 
     @Published var window: Window {
         didSet { UserDefaults.standard.set(window.rawValue, forKey: Self.windowKey) }
@@ -35,11 +36,16 @@ final class PeekPreferenceStore: ObservableObject {
         didSet { UserDefaults.standard.set(glowsOverPace, forKey: Self.glowKey) }
     }
 
+    @Published var flagsBurst: Bool {
+        didSet { UserDefaults.standard.set(flagsBurst, forKey: Self.burstKey) }
+    }
+
     var prefersWeekly: Bool { window == .weekly }
 
     private init() {
         self.window = Pref.enumValue(key: Self.windowKey, default: .session)
         self.showsLimit = UserDefaults.standard.bool(forKey: Self.limitKey)
         self.glowsOverPace = UserDefaults.standard.bool(forKey: Self.glowKey)
+        self.flagsBurst = UserDefaults.standard.bool(forKey: Self.burstKey)
     }
 }

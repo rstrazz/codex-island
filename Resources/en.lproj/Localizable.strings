@@ -431,3 +431,8 @@
 "LIMIT" = "LIMIT";
 "Glow when over pace" = "Glow when over pace";
 "Turn the glow red while Claude is on track to run out before reset." = "Turn the glow red while Claude is on track to run out before reset.";
+"Flag a fast last hour" = "Flag a fast last hour";
+"Show a flame and how many times even pace the last hour ran, while it's 3× or more." = "Show a flame and how many times even pace the last hour ran, while it's 3× or more.";
+"%d×" = "%d×";
+"%d× · out in %@" = "%d× · out in %@";
+"last hour %d times even pace" = "last hour %d times even pace";

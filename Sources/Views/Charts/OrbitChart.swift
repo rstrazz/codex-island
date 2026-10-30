@@ -91,7 +91,7 @@ struct OrbitChart: View {
                                 .lineLimit(1).frame(width: 44, alignment: .leading).help(reading.label)
                             QuotaValue(reading: reading, mode: mode, size: readings.count == 1 ? 32 : 26)
                         }
-                        QuotaCaption(caption: reading.caption).padding(.leading, 12)
+                        QuotaCaption(caption: reading.caption, burst: reading.burstText).padding(.leading, 12)
                     }
                     .help(readings.count > 1 ? L10n.tr(inner(reading) ? "Inner ring" : "Outer ring") : reading.label)
                     .modifier(QuotaAccessibility(reading: reading, mode: mode))

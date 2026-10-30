@@ -695,6 +695,14 @@ struct SettingsView: View {
                     peek.glowsOverPace.toggle()
                 }
             }
+            SettingsRow(
+                title: "Flag a fast last hour",
+                subtitle: "Show a flame and how many times even pace the last hour ran, while it's 3× or more."
+            ) {
+                SettingsToggle(isOn: peek.flagsBurst) {
+                    peek.flagsBurst.toggle()
+                }
+            }
         }
         .padding(.horizontal, 14)
         .padding(.top, 18)

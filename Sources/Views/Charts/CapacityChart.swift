@@ -17,7 +17,7 @@ struct CapacityChart: View {
                             Spacer(minLength: 4)
                             QuotaValue(reading: reading, mode: mode, size: 24)
                         }
-                        QuotaCaption(caption: reading.caption)
+                        QuotaCaption(caption: reading.caption, burst: reading.burstText)
                     }
                     .frame(width: 132, alignment: .leading)
                     grid.frame(height: 44)
@@ -29,7 +29,7 @@ struct CapacityChart: View {
                         QuotaValue(reading: reading, mode: mode, size: compact ? 28 : 40)
                         grid.frame(height: 64)
                     }
-                    QuotaCaption(caption: reading.caption)
+                    QuotaCaption(caption: reading.caption, burst: reading.burstText)
                 }
             }
         }

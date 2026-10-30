@@ -33,6 +33,7 @@ struct NotchPeekPill: View {
     var valueWidth: CGFloat? = nil
     var pace: WindowPace? = nil
     var showsLimit = false
+    var burn: RecentBurn? = nil
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -60,6 +61,8 @@ struct NotchPeekPill: View {
                     }
                     if limitReached {
                         Text(resetText ?? "").font(Typography.micro).foregroundStyle(.white.opacity(0.55))
+                    } else if let burning {
+                        burnBadge(burning, font: Typography.micro)
                     } else if usage.hasReading, paceText != nil || resetText != nil || !windowLengthFallback.isEmpty {
                         Text(L10n.tr(paceText != nil ? "Pace" : resetText == nil ? "Window" : "Reset"))
                             .font(Typography.micro).foregroundStyle(.white.opacity(0.55))
@@ -71,6 +74,9 @@ struct NotchPeekPill: View {
                 Text(contents == .reset ? "-" : "-%")
                     .font(Typography.bodyNumber)
                     .foregroundStyle(.white.opacity(0.40))
+            } else if contents == .reset, let burning, !limitReached {
+                // No caption row to share; the slot only fits one of the two.
+                burnBadge(burning, font: Typography.bodyNumber)
             } else if contents == .reset, let slotText {
                 Text(slotText).font(Typography.bodyNumber).foregroundStyle(paceTint)
             } else if contents == .reset {
@@ -119,7 +125,9 @@ struct NotchPeekPill: View {
                 }
             }
             .frame(height: 12)
-            if let slotText {
+            if let burning, !limitReached {
+                burnBadge(burning, font: Typography.caption).frame(height: 11)
+            } else if let slotText {
                 Text(slotText).font(Typography.caption).foregroundStyle(paceTint).frame(height: 11)
             } else {
                 Text(usage.isUnlimitedAmount ? "∞" : usage.hasReading ? (resetText ?? (windowLengthFallback.isEmpty ? "-" : windowLengthFallback)) : "-")
@@ -146,6 +154,22 @@ struct NotchPeekPill: View {
             }
         }
         .frame(width: 20, height: 20)
+    }
+
+    /// The "Flag a fast last hour" setting: a flame and the multiple of even
+    /// pace while the last hour ran hot.
+    private var burning: RecentBurn? {
+        guard let burn, burn.isBurning, usage.hasReading else { return nil }
+        return burn
+    }
+
+    private func burnBadge(_ burn: RecentBurn, font: Font) -> some View {
+        HStack(spacing: 2) {
+            Image(systemName: "flame.fill").imageScale(.small)
+            Text(L10n.tr("%d×", Int(burn.multiple.rounded())))
+        }
+        .font(font)
+        .foregroundStyle(UrgencyColor.amber)
     }
 
     private var warningGlyph: some View {

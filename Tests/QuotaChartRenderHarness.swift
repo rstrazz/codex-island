@@ -108,7 +108,7 @@ enum ChartQAScenario: String, CaseIterable {
     case creditsFirstFailure, creditsLongError, creditsLocalized, creditsWrappedAmount
     case creditsGrok, creditsAntigravity
     case fable, fableRemaining, fableCredits, fableError
-    case pace, paceRemaining, paceLimit, paceEarly
+    case pace, paceRemaining, paceLimit, paceEarly, paceBurst
 
     @MainActor
     func apply() {
@@ -132,6 +132,7 @@ enum ChartQAScenario: String, CaseIterable {
         UsageDisplayModeStore.shared.mode = self == .remaining || self == .creditsRemaining || self == .fableRemaining
             || self == .paceRemaining ? .remaining : .used
         PaceDisplayStore.shared.enabled = rawValue.hasPrefix("pace")
+        PeekPreferenceStore.shared.flagsBurst = self == .paceBurst
         let now = Date()
         func reading(_ value: Double, _ reset: TimeInterval) -> WindowUsage {
             WindowUsage(usedPercent: value / 100, resetAt: now.addingTimeInterval(reset), error: nil)
@@ -157,6 +158,15 @@ enum ChartQAScenario: String, CaseIterable {
                                            weekly: claudeWindows.contains(.weekly) ? claudeWeek : .unknown,
                                            plan: "Max", reportedWindows: claudeWindows)
         UsageStore.shared.lastUpdated = now
+        // paceBurst: Claude's week went 24% -> 28% over the last hour, about 7x
+        // even pace, so its caption line carries the flame.
+        if self == .paceBurst {
+            for step in 0...12 {
+                UsageHistoryStore.shared.record(key: "claude.weekly",
+                    window: reading(24 + Double(step) / 3, 5 * 86400 + 11 * 3600),
+                    at: now.addingTimeInterval(Double(step - 12) * 300))
+            }
+        }
         if rawValue.hasPrefix("fable") {
             let credit = WindowUsage(usedPercent: 0.4, resetAt: nil, error: nil,
                                      usedAmount: 6.8, limitAmount: 17, currencyCode: "USD")

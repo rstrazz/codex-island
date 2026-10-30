@@ -184,6 +184,7 @@ struct UsageChartsRow: View {
     @ObservedObject private var usageDisplay = UsageDisplayModeStore.shared
     @ObservedObject private var historyStore = UsageHistoryStore.shared
     @ObservedObject private var paceDisplay = PaceDisplayStore.shared
+    @ObservedObject private var peek = PeekPreferenceStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var readings: [QuotaChartReading] {
@@ -201,7 +202,10 @@ struct UsageChartsRow: View {
                 caption: caption(window, pace: pace), amount: window.isUnlimitedAmount ? window.usedAmount.map { UsageCreditDisplay.currency($0, code: window.currencyCode) } : nil, history: value.map {
                     SparklineSamples.displayed(history: history, value: $0, seed: seed + index,
                                                isDemo: AppEnvironment.isDemo)
-                } ?? [], pace: pace)
+                } ?? [], pace: pace,
+                burn: peek.flagsBurst ? metric.span.flatMap {
+                    historyStore.recentBurn(key: metric.historyKey, window: window, span: $0)
+                } : nil)
         }
     }
 
@@ -249,7 +253,8 @@ struct UsageChartsRow: View {
                                 SteppedChart(value: value, color: color, label: reading.label,
                                              sub: reading.caption, rowLayout: readings.count > 2,
                                              paceMark: reading.paceMark(mode: usageDisplay.mode),
-                                             projected: reading.projectedFill(mode: usageDisplay.mode))
+                                             projected: reading.projectedFill(mode: usageDisplay.mode),
+                                             burst: reading.burstText)
                             } else if let amount = reading.amount {
                                 UsageAmountChart(label: reading.label, amount: amount, sub: reading.caption)
                             } else {

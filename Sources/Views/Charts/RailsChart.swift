@@ -34,7 +34,8 @@ struct RailsChart: View {
                     .frame(height: 4)
                     .opacity(reading.amount == nil ? 1 : 0)
                     .accessibilityHidden(true)
-                    HStack { Spacer(minLength: 0); QuotaCaption(caption: reading.caption) }
+                    QuotaCaption(caption: reading.caption, burst: reading.burstText)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .modifier(QuotaAccessibility(reading: reading, mode: mode))
             }

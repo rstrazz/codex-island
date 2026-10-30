@@ -9,6 +9,15 @@ struct QuotaChartReading: Identifiable {
     var amount: String? = nil
     var history: [Double] = []
     var pace: WindowPace? = nil
+    var burn: RecentBurn? = nil
+
+    /// "5× · out in 9h" while the last hour ran hot, for the caption line.
+    var burstText: String? {
+        guard let burn, burn.isBurning else { return nil }
+        let multiple = Int(burn.multiple.rounded())
+        guard let out = burn.runsOutAt else { return L10n.tr("%d×", multiple) }
+        return L10n.tr("%d× · out in %@", multiple, Duration.compact(max(0, out.timeIntervalSinceNow)))
+    }
 
     /// Even-pace position on the 0...100 scale the chart draws, in the
     /// current used/remaining mode.
@@ -69,14 +78,42 @@ struct QuotaValue: View {
 
 struct QuotaCaption: View {
     let caption: String
+    var burst: String? = nil
 
     var body: some View {
+        Group {
+            if let burst {
+                // Narrow tiles can't fit both; the burst is the more urgent one.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) {
+                        burstLabel(burst)
+                        Spacer(minLength: 0)
+                        captionText.fixedSize()
+                    }
+                    burstLabel(burst)
+                }
+            } else {
+                captionText
+            }
+        }
+        .font(Typography.caption)
+        .lineLimit(1)
+    }
+
+    private var captionText: some View {
         Text(caption)
-            .font(Typography.caption)
             .foregroundStyle(.white.opacity(0.6))
-            .lineLimit(1)
             .truncationMode(.tail)
             .help(caption)
+    }
+
+    private func burstLabel(_ burst: String) -> some View {
+        HStack(spacing: 2) {
+            Image(systemName: "flame.fill").imageScale(.small)
+            Text(burst)
+        }
+        .foregroundStyle(UrgencyColor.amber)
+        .fixedSize()
     }
 }
 
@@ -92,7 +129,11 @@ struct QuotaAccessibility: ViewModifier {
             } ?? reading.value.map {
                 L10n.tr("%@, %d%%", reading.label, DisplayNumber.percent($0))
             } ?? L10n.tr("%@, no reading", reading.label))
-            .accessibilityValue(reading.amount == nil ? L10n.tr(mode == .used ? "Used" : "Remaining") + ", " + reading.caption : reading.caption)
+            .accessibilityValue(reading.amount == nil
+                ? ([L10n.tr(mode == .used ? "Used" : "Remaining"), reading.caption]
+                    + [reading.burn.flatMap { $0.isBurning ? L10n.tr("last hour %d times even pace", Int($0.multiple.rounded())) : nil }]
+                        .compactMap { $0 }).joined(separator: ", ")
+                : reading.caption)
     }
 }
 

@@ -81,6 +81,14 @@ final class UsageHistoryStore: ObservableObject {
         return newest
     }
 
+    /// The last hour of a window's readings against its even pace. Nil without
+    /// a live reading or enough history to judge.
+    func recentBurn(key: String, window: WindowUsage, span: TimeInterval, now: Date = Date()) -> RecentBurn? {
+        guard window.error == nil, window.hasPercentageReading, !window.isUnlimitedAmount else { return nil }
+        return RecentBurn(readings: samples(key: key).map { ($0.at, $0.used) }, usedNow: window.usedPercent,
+                          resetAt: window.resetAt, span: span, now: now)
+    }
+
     private func append(
         _ provider: AlertEngine.Provider,
         _ window: UsageWindow,

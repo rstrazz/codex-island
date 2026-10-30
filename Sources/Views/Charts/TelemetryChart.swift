@@ -12,7 +12,7 @@ struct TelemetryChart: View {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(reading.label).font(Typography.label).foregroundStyle(.white.opacity(0.65))
                             .lineLimit(1).help(reading.label)
-                        QuotaCaption(caption: reading.caption)
+                        QuotaCaption(caption: reading.caption, burst: reading.burstText)
                         Spacer(minLength: 0)
                         QuotaValue(reading: reading, mode: mode, size: readings.count == 1 ? 32 : 22)
                     }

@@ -481,6 +481,7 @@ private struct PeekPillOverlay: View {
     @ObservedObject private var alerts = AlertEngine.shared
     @ObservedObject private var paceDisplay = PaceDisplayStore.shared
     @ObservedObject private var peek = PeekPreferenceStore.shared
+    @ObservedObject private var history = UsageHistoryStore.shared
 
     var body: some View {
         let window = currentWindow
@@ -497,7 +498,8 @@ private struct PeekPillOverlay: View {
             showsResetCaption: showsResetCaption,
             valueWidth: slotWidth,
             pace: pace(for: window),
-            showsLimit: peek.showsLimit
+            showsLimit: peek.showsLimit,
+            burn: burn(for: window)
         )
         Group {
             if contents == .reset || contents == .stacked {
@@ -525,7 +527,7 @@ private struct PeekPillOverlay: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel([peekLabel(for: window, provider: providerLabel,
                                        weekly: currentWindowIsWeekly, monthly: currentWindowIsMonthly),
-                             paceLabel(for: window)].compactMap { $0 }.joined(separator: ", "))
+                             paceLabel(for: window), burstLabel(for: window)].compactMap { $0 }.joined(separator: ", "))
         // Mirror the visual opacity gate exactly — both `pillsVisible` and
         // `isVisible` must be true for the pill to render. Keying the
         // accessibility hide on only `isVisible` lets VoiceOver reach a
@@ -578,6 +580,24 @@ private struct PeekPillOverlay: View {
     private func pace(for window: WindowUsage) -> WindowPace? {
         guard paceDisplay.enabled, window.error == nil, let span = currentWindowSpan else { return nil }
         return WindowPace(usage: window, span: span)
+    }
+
+    private func burn(for window: WindowUsage) -> RecentBurn? {
+        guard peek.flagsBurst, let span = currentWindowSpan else { return nil }
+        let key: String
+        if provider.usesLegacyUsage {
+            guard let kind = currentWindowKind else { return nil }
+            key = "\(provider.rawValue).\(kind.rawValue)"
+        } else {
+            guard let limit = connections.primary(provider) else { return nil }
+            key = connections.snapshot(provider).historyKey(provider: provider, limit: limit)
+        }
+        return history.recentBurn(key: key, window: window, span: span)
+    }
+
+    private func burstLabel(for window: WindowUsage) -> String? {
+        guard let burn = burn(for: window), burn.isBurning else { return nil }
+        return L10n.tr("last hour %d times even pace", Int(burn.multiple.rounded()))
     }
 
     private func paceLabel(for window: WindowUsage) -> String? {
